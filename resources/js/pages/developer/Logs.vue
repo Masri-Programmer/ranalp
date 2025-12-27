@@ -186,6 +186,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { logs } from '@/routes/developer';
+import { clear, download } from '@/routes/developer/logs';
 import { router } from '@inertiajs/vue3';
 import {
     AlertCircle,
@@ -266,7 +268,7 @@ const debouncedSearch = () => {
 
 const applyFilters = () => {
     router.get(
-        route('developer.logs'),
+        logs.url(),
         {
             level: filters.value.level,
             search: searchQuery.value || undefined,
@@ -328,11 +330,11 @@ const clearLogs = () => {
             'Are you sure you want to clear all logs? This action cannot be undone.',
         )
     ) {
-        router.post(route('developer.logs.clear'));
+        router.post(clear.url());
     }
 };
 
 const downloadLogs = () => {
-    window.location.href = route('developer.logs.download');
+    window.location.href = download.url();
 };
 </script>

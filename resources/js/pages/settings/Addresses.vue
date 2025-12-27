@@ -318,10 +318,10 @@ const setPrimary = (address: Address) => {
                                 class="flex cursor-pointer flex-col gap-1 text-sm leading-none font-medium"
                             >
                                 <span>{{ $t('address.is_primary') }}</span>
-                                <span
+                                <!-- <span
                                     class="text-xs font-normal text-muted-foreground"
                                     >{{ $t('address.primary_notice') }}</span
-                                >
+                                > -->
                             </Label>
                         </div>
 

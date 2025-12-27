@@ -9,6 +9,7 @@ use App\Models\User;
 use Database\Factories\AddressFactory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+
 use Kdabrow\SeederOnce\SeederOnce;
 class UserSeeder extends SeederOnce
 {
@@ -47,11 +48,9 @@ class UserSeeder extends SeederOnce
             AddressFactory::new()->make()->toArray()
         );
 
-        if ($adminRole && !$admin->hasRole($adminRole)) {
-            $admin->assignRole($adminRole);
-        }
-        if ($developerRole && !$admin->hasRole($developerRole)) {
-            $admin->assignRole($developerRole);
+        if ($adminRole) {
+            $roles = array_filter([$adminRole->name, $developerRole?->name]);
+            $admin->syncRoles($roles);
         }
         
         $testUser->assignRole($userRole);
