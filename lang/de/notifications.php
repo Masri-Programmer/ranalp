@@ -34,4 +34,13 @@ return [
     'mark_all_error' => 'Fehler beim Aktualisieren der Benachrichtigungen.',
     'empty' => 'Keine neuen Benachrichtigungen.',
     'view_all' => 'Alle Benachrichtigungen anzeigen',
+
+    'payment_title' => 'Zahlung erhalten',
+    'payment_desc' => 'Sie haben eine Zahlung von :amount für ":listing" erhalten.',
+    'faq_title' => 'Neue Frage',
+    'faq_desc' => 'Jemand hat eine Frage zu ":listing" gestellt.',
+    'review_title' => 'Neue Bewertung',
+    'review_desc' => 'Sie haben eine :rating-Sterne Bewertung für ":listing" erhalten.',
+    'interaction_title' => 'Inserat-Update',
+    'interaction_desc' => 'Neue Aktivität auf ":listing".',
 ];

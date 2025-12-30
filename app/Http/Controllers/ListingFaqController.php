@@ -6,6 +6,7 @@ use App\Models\Listing;
 use App\Models\ListingFaq;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\ListingInteraction;
 
 class ListingFaqController extends Controller
 {
@@ -24,6 +25,14 @@ class ListingFaqController extends Controller
 
         $faq->setTranslation('question', app()->getLocale(), $validated['question']);
         $faq->save();
+
+        // Notify Listing Owner if the asker is NOT the owner
+        if (Auth::id() !== $listing->user_id) {
+            $listing->user->notify(new ListingInteraction($listing, 'faq', [
+                'faq_id' => $faq->id,
+                'question' => $validated['question']
+            ]));
+        }
 
         return $this->checkSuccess(ListingFaq::class,);
     }

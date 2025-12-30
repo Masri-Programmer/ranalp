@@ -32,6 +32,37 @@ return [
     'mark_all_read' => 'Mark all as read',
     'mark_all_success' => 'All notifications marked as read.',
     'mark_all_error' => 'Error updating notifications.',
-    'empty' => 'No new notifications.',
     'view_all' => 'View all notifications',
+
+    'payment_title' => 'Payment Received',
+    'payment_desc' => 'You received a payment of :amount for ":listing".',
+    'faq_title' => 'New Question',
+    'faq_desc' => 'Someone asked a question about ":listing".',
+    'review_title' => 'New Review',
+    'review_desc' => 'You received a :rating-star review for ":listing".',
+    'interaction_title' => 'Listing Update',
+    'interaction_desc' => 'New activity on ":listing".',
+
+  
+    'deleted' => 'Notification deleted.',
+    'default_title' => 'New Notification',
+    
+    // Index Page Specifics
+    'index' => [
+        'title' => 'Notifications',
+        'subtitle' => 'You have :count unread notifications.',
+    ],
+
+    'filter' => [
+        'all' => 'All',
+        'unread' => 'Unread',
+        'unread_hint' => 'You have no unread notifications.',
+        'show_all' => 'Show all',
+    ],
+
+    // Empty State
+    'empty' => [
+        'title' => 'All done!',
+        'description' => 'You currently have no notifications.',
+    ],
 ];

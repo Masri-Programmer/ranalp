@@ -9,117 +9,70 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+    type NotificationItem,
+    useNotifications,
+} from '@/composables/useNotifications';
+import { index, mark_all_read, read } from '@/routes/notifications';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { useTimeAgo } from '@vueuse/core';
-import { trans } from 'laravel-vue-i18n';
-import { AlertCircle, Bell, Check, Clock, Info } from 'lucide-vue-next';
+import { useIntervalFn, useTimeAgo } from '@vueuse/core';
+import { Bell, Clock } from 'lucide-vue-next';
 import { computed } from 'vue';
-import { useToast } from 'vue-toastification';
-
-// Types
-interface NotificationItem {
-    id: string;
-    title: string;
-    description: string;
-    type: 'info' | 'warning' | 'success' | 'error';
-    created_at: string;
-    read_at: string | null;
-    link: string;
-}
 
 const page = usePage();
-const toast = useToast();
+const { getIcon, getIconStyles } = useNotifications();
 
-const items = computed<NotificationItem[]>(() => {
-    const notifications = page.props.auth?.notifications || [];
+// --- 1. Limit & Count Logic ---
+// We access the raw array from Inertia
+const rawNotifications = computed<NotificationItem[]>(
+    () => page.props.auth?.notifications || [],
+);
 
-    return notifications.map((n: any) => ({
-        id: n.id,
-        title: n.data.title || 'Notification',
-        description: n.data.description || '',
-        type: n.data.type || 'info',
-        created_at: n.created_at,
-        read_at: n.read_at,
-        link: n.data.url || '#',
-    }));
-});
+// We slice it to show max 10 in the dropdown (improves performance if backend sends many)
+const items = computed(() => rawNotifications.value.slice(0, 10));
 
+// Count comes directly from backend count
 const unreadCountDisplay = computed(
     () => page.props.auth?.unread_notifications_count || 0,
 );
 
-/**
- * Handle marking a single notification as read and visiting its link.
- */
+const hasMore = computed(() => rawNotifications.value.length > 10);
+
+// --- 2. Auto-Polling (Fixes "Refresh" Issue) ---
+// Polls the server every 15 seconds to update 'auth' prop (notifications)
+// "only" ensures we don't reload the whole page data, just the user/notifications part
+useIntervalFn(() => {
+    router.reload({
+        only: ['auth'],
+        preserveScroll: true,
+        preserveState: true,
+    });
+}, 15000);
+
+// --- 3. Actions ---
 const handleNotificationClick = (notification: NotificationItem) => {
+    const targetUrl = notification.data.url;
+
     if (!notification.read_at) {
         router.post(
-            route('notifications.read', notification.id),
+            read.url(notification.id),
             {},
             {
                 preserveScroll: true,
                 onSuccess: () => {
-                    // Navigate after marking as read if it has a link
-                    if (notification.link && notification.link !== '#') {
-                        window.location.href = notification.link;
+                    if (targetUrl) {
+                        window.location.href = targetUrl;
                     }
                 },
             },
         );
-    } else if (notification.link && notification.link !== '#') {
-        window.location.href = notification.link;
+    } else if (targetUrl) {
+        router.visit(targetUrl);
     }
 };
 
-/**
- * Handle "Mark all as read" action.
- */
 const markAllAsRead = () => {
-    router.post(
-        route('notifications.mark_all_read'),
-        {},
-        {
-            preserveScroll: true,
-            onSuccess: () => {
-                toast.success(trans('notifications.mark_all_success'));
-            },
-            onError: () => {
-                toast.error(trans('notifications.mark_all_error'));
-            },
-        },
-    );
-};
-
-/**
- * Helper to get icon based on notification type
- */
-const getIcon = (type: string) => {
-    switch (type) {
-        case 'warning':
-            return AlertCircle;
-        case 'success':
-            return Check;
-        case 'error':
-            return AlertCircle;
-        default:
-            return Info;
-    }
-};
-
-/**
- * Helper to get color class based on notification type
- */
-const getIconColor = (type: string) => {
-    switch (type) {
-        case 'warning':
-            return 'text-yellow-500';
-        case 'success':
-            return 'text-green-500';
-        case 'error':
-            return 'text-destructive';
-        default:
-            return 'text-primary';
-    }
+    router.post(mark_all_read.url(), {}, { preserveScroll: true });
 };
 </script>
 
@@ -134,12 +87,23 @@ const getIconColor = (type: string) => {
                 <Bell class="h-5 w-5 text-foreground" />
                 <span class="sr-only">{{ $t('notifications.toggle') }}</span>
 
-                <span
-                    v-if="unreadCountDisplay > 0"
-                    class="absolute -top-0.5 -right-0.5 flex h-4 w-4 animate-in items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground shadow-sm zoom-in"
+                <transition
+                    enter-active-class="transition duration-300 ease-out"
+                    enter-from-class="transform scale-0 opacity-0"
+                    enter-to-class="transform scale-100 opacity-100"
+                    leave-active-class="transition duration-200 ease-in"
+                    leave-from-class="transform scale-100 opacity-100"
+                    leave-to-class="transform scale-0 opacity-0"
                 >
-                    {{ unreadCountDisplay }}
-                </span>
+                    <span
+                        v-if="unreadCountDisplay > 0"
+                        class="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground shadow-sm"
+                    >
+                        {{
+                            unreadCountDisplay > 99 ? '99+' : unreadCountDisplay
+                        }}
+                    </span>
+                </transition>
             </Button>
         </DropdownMenuTrigger>
 
@@ -147,9 +111,9 @@ const getIconColor = (type: string) => {
             <DropdownMenuLabel
                 class="flex items-center justify-between py-3 font-sans"
             >
-                <span class="text-base font-semibold">{{
-                    $t('notifications.title')
-                }}</span>
+                <span class="text-base font-semibold">
+                    {{ $t('notifications.title') }}
+                </span>
                 <Button
                     v-if="unreadCountDisplay > 0"
                     variant="ghost"
@@ -183,12 +147,12 @@ const getIconColor = (type: string) => {
                         @click="handleNotificationClick(item)"
                     >
                         <div
-                            class="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-background shadow-sm"
+                            class="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                            :class="getIconStyles(item.data.type)"
                         >
                             <component
-                                :is="getIcon(item.type)"
+                                :is="getIcon(item.data.type)"
                                 class="h-4 w-4"
-                                :class="getIconColor(item.type)"
                             />
                         </div>
 
@@ -202,7 +166,10 @@ const getIconColor = (type: string) => {
                                         'text-muted-foreground': item.read_at,
                                     }"
                                 >
-                                    {{ item.title }}
+                                    {{
+                                        item.data.title ||
+                                        $t('notifications.default_title')
+                                    }}
                                 </span>
                                 <span
                                     class="flex h-2 w-2 shrink-0 rounded-full bg-primary"
@@ -213,7 +180,7 @@ const getIconColor = (type: string) => {
                             <p
                                 class="line-clamp-2 text-xs text-muted-foreground"
                             >
-                                {{ item.description }}
+                                {{ item.data.description }}
                             </p>
 
                             <div
@@ -226,6 +193,13 @@ const getIconColor = (type: string) => {
                             </div>
                         </div>
                     </DropdownMenuItem>
+
+                    <!-- <div
+                        v-if="hasMore"
+                        class="py-2 text-center text-xs text-muted-foreground italic"
+                    >
+                        {{ rawNotifications.length - 10 }} more notifications...
+                    </div> -->
                 </div>
             </ScrollArea>
 
@@ -237,7 +211,7 @@ const getIconColor = (type: string) => {
                     class="w-full justify-center text-xs text-muted-foreground hover:text-foreground"
                     as-child
                 >
-                    <Link :href="'#'">
+                    <Link :href="index.url()">
                         {{ $t('notifications.view_all') }}
                     </Link>
                 </Button>

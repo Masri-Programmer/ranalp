@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Log;
 use App\Mail\ListingUpdated;
 use Illuminate\Support\Facades\Mail;
 use App\Services\ListingUpdateService;
+use App\Notifications\ListingInteraction;
 
 class PaymentController extends Controller
 {
@@ -290,6 +291,12 @@ class PaymentController extends Controller
                     if ($item instanceof InvestmentListing) {
                         // $item->increment('investors_count', $transaction->metadata['shares_count']);
                     }
+
+                    // Notify Owner
+                    $listing->user->notify(new ListingInteraction($listing, 'payment', [
+                        'amount' => number_format((float)$transaction->amount, 2) . ' ' . $transaction->currency,
+                        'transaction_id' => $transaction->id
+                    ]));
                 } 
                 // 2. Auction Bid
                 else {
@@ -311,7 +318,7 @@ class PaymentController extends Controller
                               // OUTBID! Cancel Auth.
                               try {
                                   if ($session->payment_intent) {
-                                      $pi = \Stripe\PaymentIntent::retrieve($session->payment_intent);
+                                      $pi = PaymentIntent::retrieve($session->payment_intent);
                                       $pi->cancel(['cancellation_reason' => 'void_invoice']);
                                   }
                               } catch(\Exception $e) { 
@@ -343,7 +350,7 @@ class PaymentController extends Controller
                                   // Optimization: Save PI in metadata during checkout? For now fetch.
                                   $prevSession = Session::retrieve($prevTransaction->transaction_ref);
                                   if ($prevSession->payment_intent) {
-                                      $prevPI = \Stripe\PaymentIntent::retrieve($prevSession->payment_intent);
+                                      $prevPI = PaymentIntent::retrieve($prevSession->payment_intent);
                                       $prevPI->cancel(['cancellation_reason' => 'abandoned']);
                                   }
                                   
@@ -370,6 +377,13 @@ class PaymentController extends Controller
                             'metadata' => ['transaction_id' => $transaction->id]
                          ]);
                          
+                         // Notify Owner
+                         $listing->user->notify(new ListingInteraction($listing, 'payment', [
+                             'amount' => number_format((float)$transaction->amount, 2) . ' ' . $transaction->currency,
+                             'transaction_id' => $transaction->id,
+                             'is_bid' => true
+                         ]));
+
                          // Notify System & Subscribers
                         ListingUpdateService::system($listing, 'updates.bid_new', [
                             'amount' => number_format((float)$transaction->amount, 2) . '€'
@@ -392,7 +406,7 @@ class PaymentController extends Controller
             });
         }
 
-        return Inertia::render('Payment/Success', [
+        return Inertia::render('Success', [
             'listing' => $listing,
             'transactionId' => $transaction->uuid,
         ]);

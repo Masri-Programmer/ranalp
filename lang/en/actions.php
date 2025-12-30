@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'title' => 'Actions',
     'add' => 'Add',
     'create' => 'Create',
     'edit' => 'Edit',
@@ -42,4 +43,5 @@ return [
     'reject' => 'Reject',
     'publish' => 'Publish',
     'unpublish' => 'Unpublish',
+    'mark_read' => 'Mark as read',
 ];

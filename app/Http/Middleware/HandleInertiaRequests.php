@@ -56,9 +56,13 @@ class HandleInertiaRequests extends Middleware
                 'permissions' => $request->user()?->getAllPermissions()->pluck('name'),
                 'addresses' => $user?->addresses ?? [],
                 'listings_count' => $user?->listings->count() ?? 0,
-                'notifications' => $user?->notifications()->latest()->take(5)->get() ?? [],
-                'unread_notifications_count' => $user?->unreadNotifications()->count() ?? 0,
-            ],
+               'notifications' => $request->user() 
+                ? $request->user()->notifications()->latest()->take(15)->get() 
+                : [],
+            'unread_notifications_count' => $request->user() 
+                ? $request->user()->unreadNotifications()->count() 
+                : 0,
+        ],
             'money' => [
                 'currencies' => config('money.currencies'),
                 'default' => config('money.defaults.currency'),

@@ -32,8 +32,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/transactions/{transaction:uuid}/receipt', [TransactionController::class, 'receipt'])->name('transactions.receipt');
 });
 
-Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllRead'])->name('notifications.mark_all_read');
-Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+Route::prefix('notifications')->name('notifications.')->group(function () {
+        
+        Route::get('/', [NotificationController::class, 'index'])
+            ->name('index');
+
+        Route::post('/mark-all-read', [NotificationController::class, 'markAllRead'])
+            ->name('mark_all_read');
+
+        Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])
+            ->name('read');
+
+        Route::delete('/{id}', [NotificationController::class, 'destroy'])
+            ->name('destroy');
+
+        Route::post('/settings', [NotificationController::class, 'updateSettings'])
+            ->name('settings.update');
+    });
 
 Route::middleware(['auth', 'developer'])->prefix('developer')->name('developer.')->group(function () {
     Route::get('/logs', [\App\Http\Controllers\LogViewerController::class, 'index'])->name('logs');

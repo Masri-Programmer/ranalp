@@ -7,6 +7,7 @@ use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use App\Notifications\ListingInteraction;
 
 class ReviewController extends Controller
 {
@@ -62,11 +63,17 @@ class ReviewController extends Controller
             return $this->checkError('messages.errors.already_reviewed');
         }
 
-        $listing->reviews()->create([
+        $review = $listing->reviews()->create([
             'user_id' => Auth::id(),
             'rating' => $validated['rating'],
             'body' => $validated['body'],
         ]);
+
+        // Notify Listing Owner
+        $listing->user->notify(new ListingInteraction($listing, 'review', [
+            'review_id' => $review->id,
+            'rating' => $validated['rating']
+        ]));
 
         return $this->checkSuccess(Review::class, );
     }
