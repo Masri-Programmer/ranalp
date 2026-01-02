@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ReviewResource extends JsonResource
+class ListingReviewResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

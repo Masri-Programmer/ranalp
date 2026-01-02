@@ -1,7 +1,10 @@
 <template>
     <div class="space-y-6">
         <!-- Review Form -->
-        <div v-if="$page.props.auth.user" class="rounded-lg border bg-card p-4">
+        <div
+            v-if="$page.props.auth.user && !hasReviewed && !props.isOwner"
+            class="rounded-lg border bg-card p-4"
+        >
             <h3 class="mb-4 text-lg font-semibold">
                 {{ $t('reviews.write_review') }}
             </h3>
@@ -184,7 +187,7 @@
                         </div>
                     </div>
                 </div>
-                <Separator v-if="index < reviews.length - 1" class="mt-4" />
+                <Separator v-if="index < allReviews.length - 1" class="mt-4" />
             </div>
         </template>
         <Button
@@ -211,23 +214,30 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { destroy, store, update } from '@/routes/listings/reviews';
-import { Review } from '@/types/listings';
-import { router, useForm } from '@inertiajs/vue3';
+import { ListingReview } from '@/types/listings';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 import { trans } from 'laravel-vue-i18n';
 import { Star } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps<{
-    reviews: Review[];
+    reviews: ListingReview[];
     listingId: number;
     nextPageUrl?: string | null;
+    isOwner?: boolean;
 }>();
 
-const emit = defineEmits(['load-more']);
+const { props: pageProps } = usePage();
 
-const allReviews = ref<Review[]>([...props.reviews]);
+const allReviews = ref<ListingReview[]>([...props.reviews]);
 const localNextPageUrl = ref<string | null>(props.nextPageUrl || null);
 const isLoadingMore = ref(false);
+
+const hasReviewed = computed(() => {
+    const userId = pageProps.auth?.user?.id;
+    if (!userId) return false;
+    return allReviews.value.some((r) => r.user.id === userId);
+});
 
 watch(
     () => props.reviews,
@@ -271,7 +281,7 @@ function loadMore() {
 
                 const existingIds = new Set(allReviews.value.map((r) => r.id));
                 const uniqueNewReviews = newReviews.filter(
-                    (r: Review) => !existingIds.has(r.id),
+                    (r: ListingReview) => !existingIds.has(r.id),
                 );
 
                 if (uniqueNewReviews.length > 0) {
@@ -299,7 +309,23 @@ const form = useForm({
 const submitReview = () => {
     form.post(store.url(props.listingId), {
         preserveScroll: true,
-        onSuccess: () => form.reset(),
+        onSuccess: (page) => {
+            form.reset();
+            // Inertia will reload props.reviews, which is watched.
+            // The watch will update allReviews if there's a difference.
+            // But to be "immediate" and specifically handle the new review:
+            const listing = (page.props as any).listing;
+            if (listing && listing.reviews) {
+                const refreshedReviews = listing.reviews as ListingReview[];
+                // Find the new review (the one with the highest ID or most recent)
+                const newReview = refreshedReviews.find(
+                    (r) => !allReviews.value.some((ar) => ar.id === r.id),
+                );
+                if (newReview) {
+                    allReviews.value = [newReview, ...allReviews.value];
+                }
+            }
+        },
     });
 };
 
@@ -310,7 +336,7 @@ const editForm = useForm({
     body: '',
 });
 
-const startEdit = (review: Review) => {
+const startEdit = (review: ListingReview) => {
     editingReviewId.value = review.id;
     editForm.rating = review.rating;
     editForm.body = review.body;
@@ -321,17 +347,26 @@ const cancelEdit = () => {
     editForm.reset();
 };
 
-const updateReview = (review: Review) => {
+const updateReview = (review: ListingReview) => {
     editForm.put(update.url(review.id), {
         preserveScroll: true,
         onSuccess: () => {
+            // Immediate local update
+            const index = allReviews.value.findIndex((r) => r.id === review.id);
+            if (index !== -1) {
+                allReviews.value[index] = {
+                    ...allReviews.value[index],
+                    rating: editForm.rating,
+                    body: editForm.body,
+                };
+            }
             editingReviewId.value = null;
         },
     });
 };
 
-const deleteReview = (review: Review) => {
-    if (confirm(trans('actions.are_you_sure'))) {
+const deleteReview = (review: ListingReview) => {
+    if (confirm(trans('actions.delete_confirmation.description'))) {
         useForm({}).delete(destroy.url(review.id), {
             preserveScroll: true,
             onSuccess: () => {

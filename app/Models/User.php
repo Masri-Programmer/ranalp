@@ -69,7 +69,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function reviews(): HasMany
     {
-        return $this->hasMany(Review::class);
+        return $this->hasMany(ListingReview::class);
     }
 
     public function likedListings(): BelongsToMany
@@ -98,11 +98,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Transaction::class);
     }
     public function wantsNotification($type): bool
-{
-    if (is_null($this->notification_settings)) {
-        return true;
-    }
+    {
+        if (is_null($this->notification_settings)) {
+            return true;
+        }
 
-    return $this->notification_settings[$type] ?? true;
-}
+        return $this->notification_settings[$type] ?? true;
+    }
 }

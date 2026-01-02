@@ -109,7 +109,7 @@
                                 class="ml-2 flex gap-1"
                                 @click.stop
                             >
-                                <Button
+                                <!-- <Button
                                     size="icon"
                                     :variant="
                                         faq.is_visible ? 'ghost' : 'default'
@@ -123,7 +123,7 @@
                                     "
                                 >
                                     <Eye class="h-3 w-3" />
-                                </Button>
+                                </Button> -->
                                 <Button
                                     size="icon"
                                     variant="ghost"
@@ -228,7 +228,7 @@ import { destroy, store, update } from '@/routes/listings/faq/index';
 import { User } from '@/types';
 import { ListingFaq } from '@/types/listings';
 import { router, useForm, usePage } from '@inertiajs/vue3';
-import { Eye, Pencil, Trash2 } from 'lucide-vue-next';
+import { Pencil, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 const props = defineProps<{
@@ -324,11 +324,11 @@ const saveAnswer = (faq: ListingFaq) => {
     );
 };
 
-const toggleVisibility = (faq: ListingFaq) => {
-    router.patch(update.url({ listing: props.listingId, faq: faq.id }), {
-        is_visible: !faq.is_visible,
-    });
-};
+// const toggleVisibility = (faq: ListingFaq) => {
+//     router.patch(update.url({ listing: props.listingId, faq: faq.id }), {
+//         is_visible: !faq.is_visible,
+//     });
+// };
 
 const deleteFaq = (faq: ListingFaq) => {
     router.delete(destroy.url({ listing: props.listingId, faq: faq.id }));

@@ -117,7 +117,12 @@
                             {{ update.content }}
                         </template>
                         <template v-else>
-                            {{ $t(update.translation_key, update.attributes) }}
+                            {{
+                                $t(
+                                    update.translation_key as string,
+                                    update.attributes,
+                                )
+                            }}
                         </template>
                     </p>
                 </div>

@@ -101,6 +101,9 @@ export interface ListingUpdate {
     listing_id: number;
     title: string | null;
     content: string;
+    type: 'manual' | 'system';
+    translation_key?: string | null;
+    attributes?: any;
     created_at: string;
     updated_at: string;
 }
@@ -176,7 +179,7 @@ export interface Listing {
 
     // In 'show' method, reviews are mapped specially,
     // but in general usage it might be a relationship.
-    reviews?: Review[];
+    reviews?: ListingReview[];
     next_page_url?: string | null;
     next_update_page_url?: string | null;
 }
@@ -273,7 +276,7 @@ export interface ListingFaq {
 
 // --- Review Types ---
 
-export interface ReviewUser {
+export interface ListingReviewUser {
     id: number;
     name: string;
     profile_photo_url: string | '';
@@ -281,7 +284,7 @@ export interface ReviewUser {
     is_verified?: boolean;
 }
 
-export interface Review {
+export interface ListingReview {
     id: number;
     rating: number;
     body: string;
@@ -289,14 +292,14 @@ export interface Review {
     // These are appended in the ListingController::show transformation
     time_ago: string;
     can_edit: boolean;
-    user: ReviewUser;
+    user: ListingReviewUser;
 }
 
 // --- Inertia Page Props ---
 
 export interface PageProps {
     listing: Listing & {
-        reviews: Review[];
+        reviews: ListingReview[];
         updates: ListingUpdate[];
         next_page_url?: string | null;
         next_update_page_url?: string | null;

@@ -4,7 +4,7 @@ use App\Http\Controllers\ListingController;
 use App\Http\Controllers\ListingFaqController;
 use App\Http\Controllers\ListingUpdateController;
 use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\ListingReviewController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\AuctionController;
 use App\Http\Controllers\ListingSubscriptionController;
@@ -20,7 +20,7 @@ Route::controller(ListingController::class)
 
         Route::get('/create', 'create')->name('create');
 
-        Route::get('/{listing}/reviews', [ReviewController::class, 'index'])
+        Route::get('/{listing}/reviews', [ListingReviewController::class, 'index'])
             ->name('reviews.index');
 
 
@@ -58,14 +58,14 @@ Route::controller(ListingController::class)
                 ->name('updates.destroy');
 
             // Reviews
-            Route::post('{listing}/reviews', [ReviewController::class, 'store'])
+            Route::post('{listing}/reviews', [ListingReviewController::class, 'store'])
                 ->name('reviews.store');
 
 
-            Route::put('/reviews/{review}', [ReviewController::class, 'update'])
+            Route::put('/reviews/{review}', [ListingReviewController::class, 'update'])
                 ->name('reviews.update');
 
-            Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])
+            Route::delete('/reviews/{review}', [ListingReviewController::class, 'destroy'])
                 ->name('reviews.destroy');
 
             Route::post('/{listing}/subscribe', [ListingSubscriptionController::class, 'store'])

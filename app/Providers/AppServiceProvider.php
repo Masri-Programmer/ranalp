@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
             });
         }
         Listing::observe(ListingObserver::class);
-        \App\Models\Review::observe(\App\Observers\ReviewObserver::class);
+        \App\Models\ListingReview::observe(\App\Observers\ListingReviewObserver::class);
         \App\Models\ListingFaq::observe(\App\Observers\ListingFaqObserver::class);
         \App\Models\AuctionListing::observe(\App\Observers\AuctionListingObserver::class);
         \App\Models\DonationListing::observe(\App\Observers\DonationListingObserver::class);

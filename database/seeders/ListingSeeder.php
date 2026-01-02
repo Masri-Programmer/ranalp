@@ -6,7 +6,7 @@ use App\Models\AuctionListing;
 use App\Models\DonationListing;
 use App\Models\Listing;
 use App\Models\ListingFaq;
-use App\Models\Review;
+use App\Models\ListingReview;
 use App\Models\User;
 use App\Models\Category;
 use App\Enums\ListingType;
@@ -83,7 +83,7 @@ class ListingSeeder extends SeederOnce
             'type' => ListingType::CHARITY_ACTION->value,
             'status' => 'active',
             'expires_at' => $auction->ends_at, // Sync Dates!
-            'title' => ['en' => 'Rare Collectible Art', 'de' => 'Seltene Kunst'],
+            'title' => ['en' => 'Rare Collectible Art', 'en' => 'Rare Collectible Art', 'de' => 'Seltene Kunst'],
             'description' => ['en' => 'Bidding starts now...', 'de' => 'Das Bieten beginnt...'],
         ]);
 
@@ -133,7 +133,7 @@ class ListingSeeder extends SeederOnce
 
     private function seedReviews(Listing $listing): void
     {
-        Review::factory()->count(rand(1, 3))->create([
+        ListingReview::factory()->count(rand(1, 3))->create([
             'listing_id' => $listing->id,
             'user_id' => User::inRandomOrder()->value('id') ?? User::factory(),
         ]);

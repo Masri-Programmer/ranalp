@@ -1,6 +1,6 @@
 <template>
     <div class="w-full">
-        <Tabs default-value="reviews" class="w-full rounded-lg border bg-card">
+        <Tabs default-value="reviews" class="w-full border bg-card">
             <TabsList
                 class="grid h-auto w-full grid-cols-3 rounded-none border-b p-0"
             >
@@ -24,6 +24,7 @@
                     :reviews="reviews"
                     :listing-id="listingId"
                     :next-page-url="nextPageUrl"
+                    :is-owner="isOwner"
                 />
             </TabsContent>
 
@@ -47,8 +48,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     ListingMediaCollection,
+    ListingReview,
     ListingUpdate,
-    Review,
 } from '@/types/listings';
 import ListingDocuments from './tabs/ListingDocuments.vue';
 import ListingReviews from './tabs/ListingReviews.vue';
@@ -58,7 +59,7 @@ const props = withDefaults(
     defineProps<{
         listingId: number;
         media?: ListingMediaCollection;
-        reviews?: Review[];
+        reviews?: ListingReview[];
         updates?: ListingUpdate[];
         nextPageUrl?: string | null;
         nextUpdatePageUrl?: string | null;

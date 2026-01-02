@@ -40,6 +40,7 @@ return [
     'comment' => 'Comment',
     'placeholder' => 'Share your experiences with us...',
     'submit' => 'Submit review',
+    'already_reviewed' => 'You have already reviewed this listing.',
     'verified_investor' => 'Verified investor',
     'load_more_button' => 'Load more',
     'reviews_empty' => 'No reviews available.',

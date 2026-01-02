@@ -194,7 +194,7 @@ class Listing extends Model implements HasMedia
      */
     public function reviews(): HasMany
     {
-        return $this->hasMany(Review::class);
+        return $this->hasMany(ListingReview::class);
     }
 
     public function likers(): \Illuminate\Database\Eloquent\Relations\BelongsToMany

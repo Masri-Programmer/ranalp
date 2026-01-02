@@ -8,10 +8,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Review extends Model
+class ListingReview extends Model
 {
     use HasFactory, SoftDeletes;
+
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'listing_reviews';
 
     /**
      * The attributes that are mass assignable.
@@ -47,7 +55,7 @@ class Review extends Model
      */
     public function parent(): BelongsTo
     {
-        return $this->belongsTo(Review::class, 'parent_id');
+        return $this->belongsTo(ListingReview::class, 'parent_id');
     }
 
     /**
@@ -55,7 +63,7 @@ class Review extends Model
      */
     public function replies(): HasMany
     {
-        return $this->hasMany(Review::class, 'parent_id');
+        return $this->hasMany(ListingReview::class, 'parent_id');
     }
 
     /**
