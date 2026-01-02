@@ -16,7 +16,8 @@
         "dev": "vite",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",
-        "lint": "eslint . --fix"
+        "lint": "eslint . --fix",
+        "release": "shipmark release"
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",

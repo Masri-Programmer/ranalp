@@ -185,5 +185,8 @@ return [
         'minimum_investment' => 'Inversión Mínima',
         'shares_offered' => 'Acciones Ofrecidas',
         'share_price' => 'Precio por Acción',
+        'target' => 'Meta de Donación',
+        'is_capped' => 'La meta es flexible',
     ],
+    'clipboard_unsupported' => 'Su navegador no soporta copiar.',
 ];

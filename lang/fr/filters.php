@@ -30,4 +30,13 @@ return [
         'success' => 'Filtre appliqué avec succès !',
         'error' => 'Les filtres n\'ont pas pu être appliqués.',
     ],
+    'categories' => [
+        'properties' => 'immobilier',
+        'vehicles' => 'véhicules',
+        'furniture' => 'meubles',
+        'electronics' => 'électronique',
+        'art' => 'Art et objets de collection',
+        'businesses' => 'entreprises',
+        'startups' => 'start-ups',
+    ],
 ];

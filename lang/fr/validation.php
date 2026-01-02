@@ -185,5 +185,8 @@ return [
         'minimum_investment' => 'Investissement minimum',
         'shares_offered' => 'Parts offertes',
         'share_price' => 'Prix de la part',
+        'target' => 'Objectif de don',
+        'is_capped' => 'L\'objectif est flexible',
     ],
+    'clipboard_unsupported' => 'Votre navigateur ne prend pas en charge la copie.',
 ];

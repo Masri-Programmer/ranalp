@@ -36,4 +36,12 @@ return [
     'copy' => 'Copier',
     'loading' => 'Chargement...',
     'processing' => 'Traitement...',
+    'title' => 'Actions',
+    'destroy' => 'Détruire',
+    'learn_more' => 'En savoir plus',
+    'approve' => 'Approuver',
+    'reject' => 'Rejeter',
+    'publish' => 'Publier',
+    'unpublish' => 'Dépublier',
+    'mark_read' => 'Marquer comme lu',
 ];

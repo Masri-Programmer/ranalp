@@ -8,4 +8,5 @@ return [
     'title' => 'Paramètres',
     'twoFactor' => 'Authentification à deux facteurs',
     'languages' => 'langue',
+    'addresses' => 'Adresses',
 ];

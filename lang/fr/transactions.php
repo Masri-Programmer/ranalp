@@ -10,6 +10,7 @@ return [
         'all' => 'Tout',
         'donations' => 'Dons',
         'auctions' => 'Enchères',
+        'purchases' => 'Achats',
     ],
     'columns' => [
         'date' => 'Date',
@@ -32,5 +33,6 @@ return [
     ],
     'actions' => [
         'view' => 'Voir',
+        'download' => 'Télécharger',
     ],
 ];

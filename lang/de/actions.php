@@ -42,4 +42,6 @@ return [
     'reject' => 'Ablehnen',
     'publish' => 'Veröffentlichen',
     'unpublish' => 'Veröffentlichung aufheben',
+    'title' => 'Aktionen',
+    'mark_read' => 'Als gelesen markieren',
 ];

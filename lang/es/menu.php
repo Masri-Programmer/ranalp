@@ -11,4 +11,10 @@ return [
     'transactions' => 'Transacciones',
     'about' => 'Acerca de',
     'faq' => 'Preguntas frecuentes',
+    'careers' => 'Carreras',
+    'press' => 'Prensa',
+    'contact' => 'Contacto',
+    'safety' => 'Seguridad',
+    'community' => 'Comunidad',
+    'favorites' => 'Favoritos',
 ];

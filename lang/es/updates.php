@@ -27,4 +27,5 @@ return [
     'item_purchased' => '¡Se ha comprado un artículo! Existencias restantes: :stock.',
     'new_donation_received' => 'Se ha recibido una nueva donación: :amount',
     'new_investment_made' => 'Se ha realizado una nueva inversión: :shares acciones compradas.',
+    'target_updated' => 'Meta de donación actualizada a :goal',
 ];

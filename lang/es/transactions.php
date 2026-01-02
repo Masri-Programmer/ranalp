@@ -36,5 +36,6 @@ return [
     ],
     'actions' => [
         'view' => 'Ver',
+        'download' => 'Descargar',
     ],
 ];

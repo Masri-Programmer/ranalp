@@ -36,4 +36,12 @@ return [
     'copy' => 'Copiar',
     'loading' => 'Cargando...',
     'processing' => 'Procesando...',
+    'title' => 'Acciones',
+    'destroy' => 'Destruir',
+    'learn_more' => 'Más información',
+    'approve' => 'Aprobar',
+    'reject' => 'Rechazar',
+    'publish' => 'Publicar',
+    'unpublish' => 'Despublicar',
+    'mark_read' => 'Marcar como leído',
 ];

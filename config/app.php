@@ -90,8 +90,8 @@ return [
     'supported_locales' => [
         'en',
         'de',
-        // 'es',
-        // 'fr',
+        'es',
+        'fr',
     ],
 
 
