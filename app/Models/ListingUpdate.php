@@ -15,4 +15,9 @@ class ListingUpdate extends Model
     {
         return $this->belongsTo(Listing::class);
     }
+
+    public function getModelLabel()
+    {
+        return 'Update';
+    }
 }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\ListingFaqController;
+use App\Http\Controllers\ListingUpdateController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\TransactionController;
@@ -46,6 +47,16 @@ Route::controller(ListingController::class)
             Route::patch('/{listing}/faq/{faq}', [ListingFaqController::class, 'update'])->name('faq.update');
             Route::delete('/{listing}/faq/{faq}', [ListingFaqController::class, 'destroy'])->name('faq.destroy');
 
+            // Updates
+            Route::get('{listing}/updates', [ListingUpdateController::class, 'index'])
+                ->name('updates.index');
+            Route::post('{listing}/updates', [ListingUpdateController::class, 'store'])
+                ->name('updates.store');
+            Route::put('/updates/{update}', [ListingUpdateController::class, 'update'])
+                ->name('updates.update');
+            Route::delete('/updates/{update}', [ListingUpdateController::class, 'destroy'])
+                ->name('updates.destroy');
+
             // Reviews
             Route::post('{listing}/reviews', [ReviewController::class, 'store'])
                 ->name('reviews.store');
@@ -53,7 +64,7 @@ Route::controller(ListingController::class)
 
             Route::put('/reviews/{review}', [ReviewController::class, 'update'])
                 ->name('reviews.update');
-        
+
             Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])
                 ->name('reviews.destroy');
 

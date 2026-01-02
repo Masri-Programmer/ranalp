@@ -268,32 +268,26 @@ const deleteListing = () => {
                     <AlertDialog>
                         <AlertDialogTrigger as-child>
                             <Button variant="destructive" type="button">
-                                {{ $t('listings.edit.actions.delete') }}
+                                {{ $t('actions.delete') }}
                             </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>{{
-                                    $t(
-                                        'listings.edit.delete_confirmation.title',
-                                    )
+                                    $t('actions.delete_confirmation.title')
                                 }}</AlertDialogTitle>
                                 <AlertDialogDescription>{{
                                     $t(
-                                        'listings.edit.delete_confirmation.description',
+                                        'actions.delete_confirmation.description',
                                     )
                                 }}</AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>{{
-                                    $t(
-                                        'listings.edit.delete_confirmation.cancel',
-                                    )
+                                    $t('actions.cancel')
                                 }}</AlertDialogCancel>
                                 <AlertDialogAction @click="deleteListing">{{
-                                    $t(
-                                        'listings.edit.delete_confirmation.confirm',
-                                    )
+                                    $t('actions.confirm')
                                 }}</AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
@@ -301,11 +295,9 @@ const deleteListing = () => {
 
                     <Button type="submit" :disabled="form.processing">
                         <span v-if="form.processing">{{
-                            $t('listings.edit.actions.saving')
+                            $t('actions.saving')
                         }}</span>
-                        <span v-else>{{
-                            $t('listings.edit.actions.save')
-                        }}</span>
+                        <span v-else>{{ $t('actions.save') }}</span>
                     </Button>
                 </CardFooter>
             </Card>

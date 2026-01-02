@@ -178,6 +178,7 @@ export interface Listing {
     // but in general usage it might be a relationship.
     reviews?: Review[];
     next_page_url?: string | null;
+    next_update_page_url?: string | null;
 }
 
 // --- Listable Sub-Types ---
@@ -296,7 +297,9 @@ export interface Review {
 export interface PageProps {
     listing: Listing & {
         reviews: Review[];
+        updates: ListingUpdate[];
         next_page_url?: string | null;
+        next_update_page_url?: string | null;
     };
 
     listings?: PaginatedData<Listing>;

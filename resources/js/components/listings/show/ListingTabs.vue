@@ -32,7 +32,12 @@
             </TabsContent>
 
             <TabsContent value="updates" class="p-6">
-                <ListingUpdates :updates="updates" :listing-id="listingId" />
+                <ListingUpdates
+                    :updates="updates"
+                    :listing-id="listingId"
+                    :next-page-url="nextUpdatePageUrl"
+                    :is-owner="isOwner"
+                />
             </TabsContent>
         </Tabs>
     </div>
@@ -40,7 +45,11 @@
 
 <script setup lang="ts">
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListingMediaCollection, Review, Update } from '@/types/listings';
+import {
+    ListingMediaCollection,
+    ListingUpdate,
+    Review,
+} from '@/types/listings';
 import ListingDocuments from './tabs/ListingDocuments.vue';
 import ListingReviews from './tabs/ListingReviews.vue';
 import ListingUpdates from './tabs/ListingUpdates.vue';
@@ -50,13 +59,17 @@ const props = withDefaults(
         listingId: number;
         media?: ListingMediaCollection;
         reviews?: Review[];
-        updates?: Update[];
+        updates?: ListingUpdate[];
         nextPageUrl?: string | null;
+        nextUpdatePageUrl?: string | null;
+        isOwner?: boolean;
     }>(),
     {
         reviews: () => [],
         updates: () => [],
         nextPageUrl: null,
+        nextUpdatePageUrl: null,
+        isOwner: false,
     },
 );
 </script>

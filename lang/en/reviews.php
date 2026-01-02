@@ -18,6 +18,13 @@ return [
 
     'updates' => [
         'last_checked' => 'Last checked',
+        'latest' => 'Latest Updates',
+        'post_title' => 'Post an Update',
+        'title_placeholder' => 'Title (e.g. New Milestone Reached)',
+        'content_placeholder' => 'Share details with your subscribers...',
+        'post_button' => 'Post Update',
+        'system_update_label' => 'System Update',
+        'tabs_empty' => 'No updates available.',
     ],
 
     'notifications' => [

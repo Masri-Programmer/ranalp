@@ -15,6 +15,7 @@ return [
     'back' => 'Back',
     'next' => 'Continue',
     'submit' => 'Send',
+    'saving' => 'Saving...',
     'close' => 'Close',
     'view' => 'View',
     'show' => 'Show',
@@ -44,4 +45,8 @@ return [
     'publish' => 'Publish',
     'unpublish' => 'Unpublish',
     'mark_read' => 'Mark as read',
+    'delete_confirmation' => [
+        'title' => 'Delete confirmation',
+        'description' => 'Are you sure you want to delete this entry?',
+    ],
 ];

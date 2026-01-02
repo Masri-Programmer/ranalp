@@ -60,18 +60,7 @@ return [
         'description' => '',
         'empty' => 'You haven\'t liked any posts yet.',
         'share_link_label' => 'Share link',
-        'actions' => [
-            'save' => 'Save',
-            'saving' => 'Saving...',
-            'cancel' => 'Cancel',
-            'delete' => 'Delete',
-            'delete_confirmation' => [
-                'title' => 'Confirmation',
-                'description' => 'Are you sure you want to delete this entry?',
-                'cancel' => 'Cancel',
-                'confirm' => 'Delete',
-            ],
-        ]
+
     ],
     'common' => [
         'processing' => 'Processing...',
@@ -107,5 +96,5 @@ return [
         'answer' => 'Answer',
         'no_questions_yet' => 'No questions yet',
     ],
-    
+
 ];
