@@ -129,6 +129,7 @@ trait HasAppMessages
         }
 
         return back()->with('notification', [
+            'id' => Str::uuid()->toString(),
             'type' => 'error',
             'title' => __('messages.titles.error'),
             'message' => __($message),
@@ -136,7 +137,7 @@ trait HasAppMessages
             'options' => array_merge([
                 'timeout' => 5000,
                 'closeOnClick' => true,
-                'pauseOnFocusLoss' => true,
+                'pauseOnFocusLoss' => false,
                 'pauseOnHover' => true,
                 'draggable' => true,
                 'draggablePercent' => 0.6,

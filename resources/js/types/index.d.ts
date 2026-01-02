@@ -86,7 +86,7 @@ export interface DevDetails {
     trace?: string[];
 }
 export interface AppNotification {
-    id?: number;
+    id?: string;
     type: ToastType;
     title: string;
     message: string;
@@ -108,7 +108,9 @@ export type AppPageProps<
     listings: PaginatedResponse<Listing>;
     categories: Category[];
     listing: ListingData;
-    locale: 'en' | 'de';
+    locale: string;
+    supportedLocales: string[];
+    listingTypes: string[];
     errors: object;
     user: User;
     category: Category;
@@ -122,8 +124,6 @@ export type AppPageProps<
 };
 
 export interface LocaleString {
-    en: string;
-    de: string;
     [key: string]: string;
 }
 
