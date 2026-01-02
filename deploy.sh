@@ -19,15 +19,15 @@ composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 # echo "📦 Installing npm dependencies..."
 npm ci
 
+echo "🧹 Clearing old Laravel caches..."
+php artisan optimize:clear
+
 echo "🛠️ Building assets for production (SSR)..."
 # NODE_OPTIONS=--max-old-space-size=4096 npm run build:ssr
 NODE_OPTIONS=--max-old-space-size=4096 npm run build
 
 echo "🏃 Running database migrations..."
 # php artisan migrate --force
-
-echo "🧹 Clearing old Laravel caches..."
-php artisan optimize:clear
 
 echo "🔥 Caching configuration for production..."
 php artisan config:cache
