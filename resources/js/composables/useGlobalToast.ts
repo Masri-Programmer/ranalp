@@ -19,12 +19,10 @@ export function useGlobalToast() {
                 if (!notification) return;
 
                 // 2. PREVENT DUPLICATE: Check if we already showed this ID
-                // (Assumes you added 'id' to the backend as shown in Step 1)
                 if (notification.id && notification.id === lastToastId.value) {
                     return;
                 }
 
-                // 3. Update the last ID
                 lastToastId.value = notification.id || null;
 
                 const { type, message, options } = notification;
@@ -37,8 +35,7 @@ export function useGlobalToast() {
 
                 toast[method](message, options || {});
 
-                // Optional: Manually clear the prop in the local state to be extra safe
-                // page.props.flash.notification = null;
+                page.props.flash.notification = null;
             },
             {
                 deep: true,

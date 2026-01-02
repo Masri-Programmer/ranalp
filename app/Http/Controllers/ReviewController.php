@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use App\Notifications\ListingInteraction;
+use Inertia\Inertia;
 
 class ReviewController extends Controller
 {
@@ -16,28 +17,16 @@ class ReviewController extends Controller
      */
     public function index(Request $request, Listing $listing)
     {
+        // 1. Fetch Reviews
         $reviews = $listing->reviews()
             ->with('user')
             ->orderByDesc('created_at')
-            ->paginate(10);
+            ->simplePaginate(5);
 
-        return response()->json([
-            'reviews' => $reviews->map(function ($review) {
-                return [
-                    'id' => $review->id,
-                    'user' => [
-                        'id' => $review->user->id,
-                        'name' => $review->user->name,
-                        'profile_photo_url' => $review->user->profile_photo_url ?? null,
-                    ],
-                    'rating' => $review->rating,
-                    'body' => $review->body,
-                    'created_at' => $review->created_at,
-                    'time_ago' => $review->created_at->diffForHumans(),
-                    'can_edit' => Auth::id() === $review->user_id,
-                ];
-            }),
-            'next_page_url' => $reviews->nextPageUrl(),
+        return Inertia::render('listings/Show', [
+            'listing' => $listing,
+
+            'reviews' => \App\Http\Resources\ReviewResource::collection($reviews),
         ]);
     }
 

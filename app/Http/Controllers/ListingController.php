@@ -225,7 +225,7 @@ class ListingController extends Controller
         $reviews = $listing->reviews()
             ->with('user')
             ->orderByDesc('created_at')
-            ->paginate(10);
+            ->paginate(5);
 
         $listingArray['reviews'] = $reviews->map(function ($review) {
             return [

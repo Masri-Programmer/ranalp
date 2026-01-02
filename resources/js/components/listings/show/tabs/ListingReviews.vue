@@ -62,9 +62,9 @@
         </div>
 
         <!-- Reviews List -->
-        <template v-if="reviews.length > 0">
+        <template v-if="allReviews.length > 0">
             <div
-                v-for="(review, index) in reviews"
+                v-for="(review, index) in allReviews"
                 :key="review.id"
                 class="space-y-4"
             >
@@ -187,17 +187,19 @@
                 <Separator v-if="index < reviews.length - 1" class="mt-4" />
             </div>
         </template>
-        <p v-else class="py-4 text-center text-muted-foreground">
-            {{ $t('reviews.tabs.reviews_empty') }}
-        </p>
-
         <Button
-            v-if="nextPageUrl"
-            @click="$emit('load-more')"
+            v-if="localNextPageUrl"
+            @click="loadMore"
             variant="outline"
             class="w-full"
+            :disabled="isLoadingMore"
         >
-            {{ $t('reviews.load_more_button') }}
+            <template v-if="isLoadingMore">
+                {{ $t('actions.loading') }}...
+            </template>
+            <template v-else>
+                {{ $t('reviews.load_more_button') }}
+            </template>
         </Button>
     </div>
 </template>
@@ -210,10 +212,11 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { destroy, store, update } from '@/routes/listings/reviews';
 import { Review } from '@/types/listings';
-import { useForm } from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 import { trans } from 'laravel-vue-i18n';
 import { Star } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
+
 const props = defineProps<{
     reviews: Review[];
     listingId: number;
@@ -221,6 +224,71 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(['load-more']);
+
+const allReviews = ref<Review[]>([...props.reviews]);
+const localNextPageUrl = ref<string | null>(props.nextPageUrl || null);
+const isLoadingMore = ref(false);
+
+watch(
+    () => props.reviews,
+    (newReviews) => {
+        // FIX: specific check to stop overwriting during load more
+        if (isLoadingMore.value) return;
+
+        const matchesInitial =
+            allReviews.value.length >= newReviews.length &&
+            allReviews.value
+                .slice(0, newReviews.length)
+                .every((r, i) => r.id === newReviews[i].id);
+
+        if (!matchesInitial || newReviews.length === 0) {
+            allReviews.value = [...newReviews];
+            localNextPageUrl.value = props.nextPageUrl || null;
+        }
+    },
+    { deep: true },
+);
+
+function loadMore() {
+    if (!localNextPageUrl.value || isLoadingMore.value) return;
+
+    isLoadingMore.value = true;
+
+    router.get(
+        localNextPageUrl.value,
+        {},
+        {
+            preserveState: true,
+            preserveScroll: true,
+            only: ['listing'], // Ensure your backend returns the listing with reviews nested
+            onSuccess: (page: any) => {
+                // Depending on your backend structure, ensure you are accessing
+                // the correct path. Usually, if using `only: ['listing']`,
+                // the data is in page.props.listing.reviews
+                const listing = page.props.listing;
+                const newReviews = listing.reviews || listing.data.reviews; // Handle resource wrapping
+                const nextPage = listing.next_page_url || listing.links?.next; // Handle resource wrapping
+
+                const existingIds = new Set(allReviews.value.map((r) => r.id));
+                const uniqueNewReviews = newReviews.filter(
+                    (r: Review) => !existingIds.has(r.id),
+                );
+
+                if (uniqueNewReviews.length > 0) {
+                    // Append new reviews to the existing list
+                    allReviews.value = [
+                        ...allReviews.value,
+                        ...uniqueNewReviews,
+                    ];
+                }
+                localNextPageUrl.value = nextPage;
+            },
+            onFinish: () => {
+                isLoadingMore.value = false;
+            },
+        },
+    );
+}
 
 // Create Review Form
 const form = useForm({
@@ -266,6 +334,11 @@ const deleteReview = (review: Review) => {
     if (confirm(trans('actions.are_you_sure'))) {
         useForm({}).delete(destroy.url(review.id), {
             preserveScroll: true,
+            onSuccess: () => {
+                allReviews.value = allReviews.value.filter(
+                    (r) => r.id !== review.id,
+                );
+            },
         });
     }
 };

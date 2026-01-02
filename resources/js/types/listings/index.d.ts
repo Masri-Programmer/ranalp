@@ -177,6 +177,7 @@ export interface Listing {
     // In 'show' method, reviews are mapped specially,
     // but in general usage it might be a relationship.
     reviews?: Review[];
+    next_page_url?: string | null;
 }
 
 // --- Listable Sub-Types ---
@@ -274,7 +275,7 @@ export interface ListingFaq {
 export interface ReviewUser {
     id: number;
     name: string;
-    profile_photo_url: string | null;
+    profile_photo_url: string | '';
     // is_verified is not explicitly in the transformed array in controller, but safe to keep if User model has it
     is_verified?: boolean;
 }

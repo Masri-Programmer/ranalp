@@ -8,7 +8,7 @@
     <NotificationSubscription :listing-id="listing.id" />
     <ListingTabs
         :reviews="listing.reviews"
-        :next-page-url="mockNextPageUrl"
+        :next-page-url="listing.next_page_url"
         :media="listing.media"
         :listing-id="listing.id"
     />
@@ -36,7 +36,6 @@
 </template>
 
 <script setup lang="ts">
-import { mockNextPageUrl } from '@/components/listings/show/Review';
 import { formatCurrency } from '@/composables/useCurrency';
 import { Listing } from '@/types/listings';
 import { BarChart, CheckCircle, ShieldCheck, Users } from 'lucide-vue-next';
