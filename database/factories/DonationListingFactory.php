@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\DonationListing;
 use App\Models\Listing;
+use App\Enums\ListingType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class DonationListingFactory extends Factory
@@ -27,7 +28,11 @@ class DonationListingFactory extends Factory
             Listing::factory()->create([
                 'listable_type' => DonationListing::class,
                 'listable_id' => $donation->id,
-                'type' => 'donation',
+                'type' => $this->faker->randomElement([
+                    ListingType::PRIVATE_OCCASION->value,
+                    ListingType::DONATION_CAMPAIGN->value,
+                    ListingType::FOUNDERS_CREATIVES->value
+                ]),
                 // Donations might expire whenever, or match a campaign end date
             ]);
         });

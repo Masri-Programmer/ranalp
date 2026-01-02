@@ -13,6 +13,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { useTranslation } from '@/composables/useTranslation';
 import { show } from '@/routes/listings';
 import { Listing } from '@/types/listings';
 import { Link } from '@inertiajs/vue3';
@@ -20,13 +21,11 @@ import { trans } from 'laravel-vue-i18n';
 import { ExternalLink, MapPin, Star } from 'lucide-vue-next';
 import { computed, PropType } from 'vue';
 
+const { translate } = useTranslation();
+
 const props = defineProps({
     listing: {
         type: Object as PropType<Listing>,
-        required: true,
-    },
-    locale: {
-        type: String,
         required: true,
     },
 });
@@ -79,7 +78,7 @@ const handleImageError = (e: Event) => {
             <CardHeader class="relative p-0">
                 <img
                     :src="listing.image_url || fallbackImage"
-                    :alt="listing.title[locale]"
+                    :alt="translate(listing.title)"
                     class="h-48 w-full object-cover"
                     @error="handleImageError"
                 />
@@ -94,7 +93,7 @@ const handleImageError = (e: Event) => {
                 <div class="absolute top-4 right-4 flex gap-2">
                     <ShareAction
                         :share-url="shareUrl"
-                        :listing-title="listing.title[locale]"
+                        :listing-title="translate(listing.title)"
                     />
                     <LikeAction :listing="listing" />
                 </div>
@@ -102,15 +101,15 @@ const handleImageError = (e: Event) => {
 
             <CardContent class="flex-grow pt-6">
                 <span class="text-sm font-medium text-primary">{{
-                    listing.category.name[locale]
+                    translate(listing.category.name)
                 }}</span>
                 <CardTitle class="mt-1 mb-2 text-xl font-bold">
-                    {{ listing.title[locale] }}
+                    {{ translate(listing.title) }}
                 </CardTitle>
                 <CardDescription
                     class="line-clamp-2 text-muted-foreground"
                     v-html="
-                        listing.description[locale]
+                        translate(listing.description)
                             .substring(0, 100)
                             .concat('...')
                     "

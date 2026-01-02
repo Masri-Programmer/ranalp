@@ -6,14 +6,15 @@ use App\Models\AuctionListing;
 use App\Models\DonationListing;
 use App\Models\Listing;
 use App\Models\ListingFaq;
-use App\Models\Review; 
+use App\Models\Review;
 use App\Models\User;
 use App\Models\Category;
+use App\Enums\ListingType;
 use Illuminate\Database\Seeder;
 use Database\Factories\AddressFactory;
 
 // Assuming you have this package, otherwise extend standard Seeder
-use Kdabrow\SeederOnce\SeederOnce; 
+use Kdabrow\SeederOnce\SeederOnce;
 
 class ListingSeeder extends SeederOnce
 {
@@ -35,7 +36,7 @@ class ListingSeeder extends SeederOnce
 
         foreach ($listingTypes as $class) {
             $this->command->info("Creating $class...");
-            
+
             // 1. Run the Factory (which runs withListing() -> creates parent Listing)
             $items = $class::factory()
                 ->count($this->count)
@@ -45,7 +46,7 @@ class ListingSeeder extends SeederOnce
             // 2. Loop through created items to add Extras (Review/Media)
             foreach ($items as $item) {
                 // Because we used 'afterCreating', the relationship might not be loaded yet
-                $item->load('listing'); 
+                $item->load('listing');
 
                 if ($item->listing) {
                     $this->seedExtras($item->listing);
@@ -61,9 +62,9 @@ class ListingSeeder extends SeederOnce
     {
         $user = User::first();
         $category = Category::first();
-        
+
         // Ensure user has an address
-        $address = $user->addresses()->first() 
+        $address = $user->addresses()->first()
             ?? \App\Models\Address::factory()->for($user, 'addressable')->create();
 
         // --- 1. Manual Auction ---
@@ -79,7 +80,7 @@ class ListingSeeder extends SeederOnce
             'user_id' => $user->id,
             'category_id' => $category->id,
             'address_id' => $address->id,
-            'type' => 'auction',
+            'type' => ListingType::CHARITY_ACTION->value,
             'status' => 'active',
             'expires_at' => $auction->ends_at, // Sync Dates!
             'title' => ['en' => 'Rare Collectible Art', 'de' => 'Seltene Kunst'],
@@ -98,7 +99,7 @@ class ListingSeeder extends SeederOnce
             'user_id' => $user->id,
             'category_id' => $category->id,
             'address_id' => $address->id,
-            'type' => 'donation',
+            'type' => ListingType::DONATION_CAMPAIGN->value,
             'status' => 'active',
             'expires_at' => now()->addMonths(1),
             'title' => ['en' => 'Park Renovation', 'de' => 'Parkrenovierung'],
@@ -184,7 +185,7 @@ class ListingSeeder extends SeederOnce
         try {
             // Only add video to some listings
             if (rand(0, 1) && file_exists("$seedingPath/video.mp4")) {
-                 $listing->addMedia("$seedingPath/video.mp4")
+                $listing->addMedia("$seedingPath/video.mp4")
                     ->preservingOriginal()
                     ->toMediaCollection('videos');
             }

@@ -114,7 +114,7 @@ trait HasAppMessages
      * @param string $message Custom message or translation key
      * @param \Throwable|null $exception Optional exception for logging/dev output
      */
-   protected function checkError(string $message, ?\Throwable $exception = null, array $options = [])
+    protected function checkError(string $message, ?\Throwable $exception = null, array $options = [])
     {
         $devDetails = null;
 
@@ -125,7 +125,7 @@ trait HasAppMessages
                 'line' => $exception->getLine(),
             ];
             Log::error($exception->getMessage(), $devDetails);
-            $options['timeout'] = false; 
+            $options['timeout'] = false;
         }
 
         return back()->with('notification', [
@@ -138,9 +138,9 @@ trait HasAppMessages
                 'closeOnClick' => true,
                 'pauseOnFocusLoss' => true,
                 'pauseOnHover' => true,
-                'draggable' => false,
+                'draggable' => true,
                 'draggablePercent' => 0.6,
-                'showCloseButtonOnHover' => false,
+                'showCloseButtonOnHover' => true,
                 'hideProgressBar' => false,
                 'closeButton' => 'button',
                 'icon' => true,

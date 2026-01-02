@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Enums\ListingType;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Throwable;
@@ -37,13 +38,13 @@ class ListingController extends Controller
     public function index(Request $request)
     {
         $filters = $request->validate([
-            'search'    => 'nullable|string|max:100',
-            'category'  => 'nullable|string|max:100',
-            'types'     => 'nullable|string',
+            'search' => 'nullable|string|max:100',
+            'category' => 'nullable|string|max:100',
+            'types' => 'nullable|string',
             'min_price' => 'nullable|numeric',
             'max_price' => 'nullable|numeric',
-            'city'      => 'nullable|string|max:100',
-            'sort'      => 'nullable|string|in:latest,oldest,price-low,price-high,popular',
+            'city' => 'nullable|string|max:100',
+            'sort' => 'nullable|string|in:latest,oldest,price-low,price-high,popular',
         ]);
 
         $listings = $this->listingService->getListings($filters);
@@ -55,7 +56,7 @@ class ListingController extends Controller
     }
     public function create(Request $request)
     {
-        if(!$request->user()) {
+        if (!$request->user()) {
             return redirect()->route('login');
         }
         return Inertia::render('listings/Create', [
@@ -78,22 +79,28 @@ class ListingController extends Controller
         try {
             DB::beginTransaction();
 
-           $type = $validatedData['type']; // e.g., 'private_occasion'
+            $type = $validatedData['type']; // e.g., 'private_occasion'
             $mode = $validatedData['mode']; // e.g., 'donation', 'auction', 'purchase'
 
-         if (in_array($type, ['private_occasion', 'founders_creatives', 'donation_campaign'])) {
-                 $mode = 'donation';
+            if (
+                in_array($type, [
+                    ListingType::PRIVATE_OCCASION->value,
+                    ListingType::FOUNDERS_CREATIVES->value,
+                    ListingType::DONATION_CAMPAIGN->value
+                ])
+            ) {
+                $mode = 'donation';
             }
 
-      switch ($mode) {
+            switch ($mode) {
                 case 'auction':
                 case 'purchase': // Both map to AuctionListing based on your AuctionListing.php
                     $specificListing = AuctionListing::create([
-                        'start_price'    => $mode === 'auction' ? $validatedData['start_price'] : null,
-                        'reserve_price'  => $mode === 'auction' ? $validatedData['reserve_price'] : null,
+                        'start_price' => $mode === 'auction' ? $validatedData['start_price'] : null,
+                        'reserve_price' => $mode === 'auction' ? $validatedData['reserve_price'] : null,
                         'purchase_price' => $validatedData['purchase_price'],
-                        'starts_at'      => $validatedData['starts_at'],
-                        'ends_at'        => $validatedData['ends_at'],
+                        'starts_at' => $validatedData['starts_at'],
+                        'ends_at' => $validatedData['ends_at'],
                         'item_condition' => $validatedData['item_condition'] ?? 'new',
                     ]);
                     break;
@@ -101,7 +108,7 @@ class ListingController extends Controller
                 case 'donation':
                     $specificListing = DonationListing::create([
                         // Mapping 'target' from form to 'target' in DB (check your DonationListing fillable)
-                        'target'    => $validatedData['target'] ?? 0, 
+                        'target' => $validatedData['target'] ?? 0,
                         'is_capped' => $validatedData['is_capped'] ?? false,
                         // 'requires_verification' => ($type === 'donation_campaign'), // Example logic
                     ]);
@@ -111,22 +118,25 @@ class ListingController extends Controller
                     throw new \Exception("Invalid listing mode: {$mode}");
             }
 
-          $listing = $specificListing->listing()->create([
-                'user_id'       => Auth::id(),
-                'category_id'   => $validatedData['category_id'],
-                'type'          => $type, // Store the specific business type
-                'expires_at'    => $validatedData['expires_at'],
-                'title'         => $validatedData['title'],
-                'description'   => $validatedData['description'],
-                'address_id'    => null, // Handle address creation if needed
-            'status'        => 'active',
-            'meta'          => $type === 'private_occasion' ? ['is_private' => true, 'access_token' => Str::random(32)] : [],
+            $listing = $specificListing->listing()->create([
+                'user_id' => Auth::id(),
+                'category_id' => $validatedData['category_id'],
+                'type' => $type, // Store the specific business type
+                'expires_at' => $validatedData['expires_at'],
+                'title' => $validatedData['title'],
+                'description' => $validatedData['description'],
+                'address_id' => $validatedData['address_id'] ?? null,
+                'status' => 'active',
+                'meta' => $type === ListingType::PRIVATE_OCCASION->value ? ['is_private' => true, 'access_token' => Str::random(32)] : [],
             ]);
 
             $filesAttached = 0;
-            if ($request->hasFile('images')) $filesAttached += count($request->file('images'));
-            if ($request->hasFile('documents')) $filesAttached += count($request->file('documents'));
-            if ($request->hasFile('videos')) $filesAttached += count($request->file('videos'));
+            if ($request->hasFile('images'))
+                $filesAttached += count($request->file('images'));
+            if ($request->hasFile('documents'))
+                $filesAttached += count($request->file('documents'));
+            if ($request->hasFile('videos'))
+                $filesAttached += count($request->file('videos'));
 
             if ($filesAttached > 0) {
                 Log::info("Attaching $filesAttached total media items via service.");
@@ -167,24 +177,26 @@ class ListingController extends Controller
             'bids'
         ]);
 
-        $listing->load(['faqs' => function ($q) use ($listing) {
-            $userId = Auth::id();
+        $listing->load([
+            'faqs' => function ($q) use ($listing) {
+                $userId = Auth::id();
 
-            if ($userId !== $listing->user_id) {
-                $q->where(function ($query) use ($userId) {
-                    $query->where(function ($sub) {
-                        $sub->whereNotNull('answer')
-                            ->where('is_visible', true);
+                if ($userId !== $listing->user_id) {
+                    $q->where(function ($query) use ($userId) {
+                        $query->where(function ($sub) {
+                            $sub->whereNotNull('answer')
+                                ->where('is_visible', true);
+                        });
+
+                        if ($userId) {
+                            $query->orWhere('user_id', $userId);
+                        }
                     });
+                }
 
-                    if ($userId) {
-                        $query->orWhere('user_id', $userId);
-                    }
-                });
+                $q->with('user:id,name');
             }
-
-            $q->with('user:id,name');
-         }]);
+        ]);
 
         $mediaData = [
             'images' => $listing->getMedia('images')->map(fn($item) => [
@@ -278,7 +290,7 @@ class ListingController extends Controller
             }
 
             $mediaService->handleDeletions($mediaToDelete);
-            
+
             // Handle uploads and catch potential errors from media library
             try {
                 $mediaService->handleUploads($request, $listing);
@@ -319,7 +331,7 @@ class ListingController extends Controller
         }
     }
 
-public function like(Request $request, Listing $listing): RedirectResponse
+    public function like(Request $request, Listing $listing): RedirectResponse
     {
         if (!Auth::check()) {
             return redirect()->route('login');

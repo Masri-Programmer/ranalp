@@ -7,17 +7,19 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 
+use App\Services\LanguageService;
+
 class LanguageController extends Controller
 {
     /**
      * Switch the application locale and redirect back.
      */
-    public function switch(string $locale, Request $request): RedirectResponse
+    public function switch(string $locale, Request $request, LanguageService $languageService): RedirectResponse
     {
-        $supportedLocales = config('app.supported_locales', ['de']);
-        if (in_array($locale, $supportedLocales, true)) {
+        if ($languageService->isSupported($locale)) {
             Session::put('locale', $locale);
             App::setLocale($locale);
+
             if ($request->user()) {
                 $request->user()->update(['locale' => $locale]);
             }

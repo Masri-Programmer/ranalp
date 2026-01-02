@@ -2,8 +2,7 @@
 
 use Spatie\LaravelSettings\Migrations\SettingsMigration;
 
-return new class extends SettingsMigration
-{
+return new class extends SettingsMigration {
     public function up(): void
     {
         // ------------------------------------------------
@@ -16,20 +15,21 @@ return new class extends SettingsMigration
         $this->migrator->add('general.favicon_url', '/images/default-favicon.png');
         $this->migrator->add('general.contact_email', 'admin@ranalp.com');
         $this->migrator->add('general.support_phone', '+1 555-0123');
-        
+
         // Pagination defaults
         $this->migrator->add('general.per_page', 15);
-
+        $this->migrator->add('general.marketplace_per_page', 12); // Default for /listings
+        $this->migrator->add('general.home_per_page', 8);        // Default for Home Page
         // ------------------------------------------------
         // 2. AUCTION LOGIC (Crucial for your app)
         // ------------------------------------------------
         // Anti-Sniping: If bid in last 60s, extend by 120s
-        $this->migrator->add('auction.sniper_protection_seconds', 60); 
+        $this->migrator->add('auction.sniper_protection_seconds', 60);
         $this->migrator->add('auction.sniper_extension_seconds', 120);
-        
+
         // Buffers: Time between auction end and winner processing
         $this->migrator->add('auction.processing_buffer_seconds', 300);
-        
+
         // Fees: Global default fees (can be overridden per listing usually)
         $this->migrator->add('auction.default_commission_percent', 5.0);
         $this->migrator->add('auction.listing_fee', 0.00);
@@ -49,7 +49,7 @@ return new class extends SettingsMigration
         $this->migrator->add('general.meta_title', 'Ranalp - Premium Auctions');
         $this->migrator->add('general.meta_description', 'The best place to buy and sell items.');
         $this->migrator->add('general.og_image', '/images/social-share.jpg');
-        
+
         $this->migrator->add('general.facebook_url', 'https://facebook.com/ranalp');
         $this->migrator->add('general.twitter_url', 'https://twitter.com/ranalp');
         $this->migrator->add('general.instagram_url', null);

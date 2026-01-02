@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Listings\StoreListingRequest;
 use App\Http\Requests\Listings\UpdateListingRequest;
+use App\Settings\GeneralSettings;
 use Throwable;
 use App\Models\Category;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -17,16 +18,21 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 class ListingService
 {
     protected $mediaService;
-
+    public function __construct(
+        protected GeneralSettings $settings
+    ) {
+    }
     /**
      * Filter and paginate listings.
      */
-    public function getListings(array $filters): LengthAwarePaginator
+    public function getListings(array $filters, int $perPage = null): LengthAwarePaginator
     {
+        $limit = $perPage ?? $this->settings->per_page;
+
         $listings = Listing::query()
             ->with(['listable', 'user', 'category', 'media'])
             ->filter($filters)
-            ->paginate(12)
+            ->paginate($limit)
             ->withQueryString();
 
         $listings->getCollection()->transform(function ($listing) {
@@ -101,7 +107,7 @@ class ListingService
             case 'donation':
                 return DonationListing::create([
                     'target' => $data['target'],
-                    'is_capped' =>  $data['is_capped'],
+                    'is_capped' => $data['is_capped'],
                 ]);
             default:
                 throw new \Exception("Invalid listing type: {$data['listing_type']}");

@@ -56,21 +56,21 @@ class HandleInertiaRequests extends Middleware
                 'permissions' => $request->user()?->getAllPermissions()->pluck('name'),
                 'addresses' => $user?->addresses ?? [],
                 'listings_count' => $user?->listings->count() ?? 0,
-               'notifications' => $request->user() 
-                ? $request->user()->notifications()->latest()->take(15)->get() 
-                : [],
-            'unread_notifications_count' => $request->user() 
-                ? $request->user()->unreadNotifications()->count() 
-                : 0,
-        ],
+                'notifications' => $request->user()
+                    ? $request->user()->notifications()->latest()->take(15)->get()
+                    : [],
+                'unread_notifications_count' => $request->user()
+                    ? $request->user()->unreadNotifications()->count()
+                    : 0,
+            ],
             'money' => [
                 'currencies' => config('money.currencies'),
                 'default' => config('money.defaults.currency'),
             ],
             'locale' => fn() => App::getLocale(),
-            // 'locale' => $request->user()->locale ?? $request->getPreferredLanguage(),
             'supportedLocales' => fn() => config('app.supported_locales'),
-            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'listingTypes' => \App\Enums\ListingType::values(),
+            'sidebarOpen' => !$request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'navigation' => $componentService->getStructuredComponent('main_navigation'),
             'footer' => $componentService->getStructuredComponent('site_footer'),
             'categories' => $this->getCategories(),
@@ -98,9 +98,9 @@ class HandleInertiaRequests extends Middleware
                 return null;
             },
             'flash' => [
-                'notification' => fn () => $request->session()->get('notification'),
-                'success' => fn () => $request->session()->get('success'),
-                'error' => fn () => $request->session()->get('error'),
+                'notification' => fn() => $request->session()->get('notification'),
+                'success' => fn() => $request->session()->get('success'),
+                'error' => fn() => $request->session()->get('error'),
             ],
         ];
     }
@@ -108,7 +108,7 @@ class HandleInertiaRequests extends Middleware
     public function getCategories(): \Illuminate\Support\Collection
     {
         return Cache::remember('site_categories_tree', now()->addDay(), function () {
-            
+
             $allCategories = \App\Models\Category::whereNull('parent_id')
                 ->with('children')
                 ->withCount('listings')

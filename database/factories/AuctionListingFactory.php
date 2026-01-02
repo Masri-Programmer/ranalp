@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\AuctionListing;
 use App\Models\Listing;
+use App\Enums\ListingType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class AuctionListingFactory extends Factory
@@ -13,7 +14,7 @@ class AuctionListingFactory extends Factory
     public function definition(): array
     {
         $startsAt = $this->faker->dateTimeBetween('-1 month', '+1 week');
-        
+
         return [
             'start_price' => $this->faker->randomFloat(2, 10, 1000),
             'reserve_price' => $this->faker->boolean(30) ? $this->faker->randomFloat(2, 500, 2000) : null,
@@ -35,8 +36,8 @@ class AuctionListingFactory extends Factory
             Listing::factory()->create([
                 'listable_type' => AuctionListing::class,
                 'listable_id' => $auction->id,
-                'type' => 'auction',
-                
+                'type' => ListingType::CHARITY_ACTION->value,
+
                 // CRITICAL: Sync the Listing expiration with the Auction end time
                 'expires_at' => $auction->ends_at,
                 'published_at' => $auction->starts_at,

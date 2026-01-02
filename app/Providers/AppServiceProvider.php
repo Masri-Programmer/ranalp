@@ -38,7 +38,7 @@ class AppServiceProvider extends ServiceProvider
 
         \Illuminate\Support\Facades\Event::listen(
             \Illuminate\Auth\Events\Login::class,
-            \App\Listeners\SetLocaleOnLogin::class
+            \App\Listeners\SetLanguageOnLogin::class
         );
 
         \Illuminate\Auth\Notifications\VerifyEmail::toMailUsing(function (object $notifiable, string $url) {

@@ -153,14 +153,19 @@ watch(
     { deep: true },
 );
 
-// --- UPDATED LISTING TYPES ---
-const listingTypes = [
-    { id: 'all', labelKey: 'filters.allCategories' }, // or 'filters.all'
-    // { id: 'private_occasion', labelKey: 'types.private_occasion.title' },
-    { id: 'charity_action', labelKey: 'types.charity_action.title' },
-    { id: 'donation_campaign', labelKey: 'types.donation_campaign.title' },
-    { id: 'founders_creatives', labelKey: 'types.founders_creatives.title' },
-];
+// --- DYNAMIC LISTING TYPES ---
+const listingTypes = computed(() => {
+    const backendTypes = (page.props.listingTypes as string[]) || [];
+    return [
+        { id: 'all', labelKey: 'filters.allCategories' },
+        ...backendTypes
+            .filter((t) => t !== 'private_occasion') // Usually hidden from search filters
+            .map((t) => ({
+                id: t,
+                labelKey: `createListing.types.${t}.title`,
+            })),
+    ];
+});
 
 const sortOptions = [
     { id: 'latest', labelKey: 'filters.sortOptions.recent' },
@@ -172,7 +177,7 @@ const sortOptions = [
 ];
 
 function getListingTypeLabel(typeId: string) {
-    const type = listingTypes.find((t) => t.id === typeId);
+    const type = listingTypes.value.find((t) => t.id === typeId);
     return type ? type.labelKey : typeId;
 }
 

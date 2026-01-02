@@ -21,22 +21,22 @@ class ListingFactory extends Factory
             'address_id' => function (array $attributes) {
                 $userId = $attributes['user_id'];
                 $user = User::find($userId);
-                
+
                 if (!$user) {
-                     return Address::factory()->create([
-                         'addressable_id' => $userId,
-                         'addressable_type' => User::class,
-                     ])->id;
+                    return Address::factory()->create([
+                        'addressable_id' => $userId,
+                        'addressable_type' => User::class,
+                    ])->id;
                 }
 
                 return Address::factory()->for($user, 'addressable')->create()->id;
-            }, 
-            
+            },
+
             'status' => $this->faker->randomElement(['active', 'pending', 'expired']),
 
             'is_featured' => $this->faker->boolean(10),
             'published_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
-            
+
             'expires_at' => $this->faker->dateTimeBetween('now', '+1 year'),
 
             'title' => [
@@ -47,7 +47,7 @@ class ListingFactory extends Factory
                 'en' => $this->faker->realText(300),
                 'de' => $this->faker->realText(300),
             ],
-            'type' => 'standard',
+            'type' => \App\Enums\ListingType::DONATION_CAMPAIGN->value,
         ];
     }
 }

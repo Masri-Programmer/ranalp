@@ -4,6 +4,8 @@ namespace App\Http\Requests\Listings;
 
 use Carbon\Carbon;
 use App\Http\Requests\BaseFormRequest;
+use App\Enums\ListingType;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class StoreListingRequest extends BaseFormRequest
@@ -32,8 +34,8 @@ class StoreListingRequest extends BaseFormRequest
         };
 
         $expires = $parseDate($this->expires_at);
-        $starts  = $parseDate($this->starts_at);
-        $ends    = $parseDate($this->ends_at);
+        $starts = $parseDate($this->starts_at);
+        $ends = $parseDate($this->ends_at);
 
         // For auctions/charity actions, ensure expires_at matches ends_at if provided
         if ($ends && !$expires) {
@@ -42,8 +44,8 @@ class StoreListingRequest extends BaseFormRequest
 
         $this->merge([
             'expires_at' => $expires ? Carbon::parse($expires)->toDateTimeString() : null,
-            'starts_at'  => $starts  ? Carbon::parse($starts)->toDateTimeString() : null,
-            'ends_at'    => $ends    ? Carbon::parse($ends)->toDateTimeString() : null,
+            'starts_at' => $starts ? Carbon::parse($starts)->toDateTimeString() : null,
+            'ends_at' => $ends ? Carbon::parse($ends)->toDateTimeString() : null,
         ]);
     }
 
@@ -60,20 +62,19 @@ class StoreListingRequest extends BaseFormRequest
             'title' => 'required|array',
             'title.' . $userLocale => 'required|string|max:255',
             'title.*' => 'nullable|string|max:255',
-            
+
             'description' => 'required|array',
             'description.' . $userLocale => 'required|string',
             'description.*' => 'nullable|string',
-            
+
             'category_id' => 'required|exists:categories,id',
             'address_id' => 'nullable|exists:addresses,id',
             'expires_at' => 'nullable|date|after:now',
 
-            // --- 1. New Business Types ---
             'type' => [
                 'required',
                 'string',
-                'in:private_occasion,charity_action,donation_campaign,founders_creatives'
+                Rule::in(ListingType::values()),
             ],
 
             // --- 2. Technical Modes ---
@@ -81,12 +82,12 @@ class StoreListingRequest extends BaseFormRequest
             'mode' => 'nullable|string|in:purchase,auction,donation',
 
             // --- Media Data ---
-            'images'    => 'nullable|array',
-            'images.*'  => 'file|mimetypes:image/jpeg,image/png,image/webp|max:10240',
+            'images' => 'nullable|array',
+            'images.*' => 'file|mimetypes:image/jpeg,image/png,image/webp|max:10240',
             'documents' => 'nullable|array',
             'documents.*' => 'file|mimetypes:application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document|max:5120',
-            'videos'    => 'nullable|array',
-            'videos.*'  => 'file|mimetypes:video/mp4,video/quicktime|max:51200',
+            'videos' => 'nullable|array',
+            'videos.*' => 'file|mimetypes:video/mp4,video/quicktime|max:51200',
         ];
 
         // --- 3. Club Validation (Donation Campaign) ---
@@ -105,38 +106,44 @@ class StoreListingRequest extends BaseFormRequest
         // --- 4. Type-Specific Logic ---
         $specificRules = [];
         $type = $this->input('type');
-        
+
         // Infer mode if not explicitly sent (fallback)
         $mode = $this->input('mode') ?? 'donation';
 
         // Force mode based on strict business type rules
-        if (in_array($type, ['private_occasion', 'donation_campaign', 'founders_creatives'])) {
+        if (
+            in_array($type, [
+                ListingType::PRIVATE_OCCASION->value,
+                ListingType::DONATION_CAMPAIGN->value,
+                ListingType::FOUNDERS_CREATIVES->value
+            ])
+        ) {
             $mode = 'donation';
         }
 
         switch ($mode) {
             case 'auction':
                 $specificRules = [
-                    'start_price'    => 'required|numeric|min:0',
-                    'starts_at'      => 'nullable|date|after:now',
-                    'ends_at'        => 'required|date|after:starts_at',
-                    'reserve_price'  => 'nullable|numeric|gte:start_price',
+                    'start_price' => 'required|numeric|min:0',
+                    'starts_at' => 'nullable|date|after:now',
+                    'ends_at' => 'required|date|after:starts_at',
+                    'reserve_price' => 'nullable|numeric|gte:start_price',
                     'purchase_price' => 'nullable|numeric|gte:start_price',
                     'item_condition' => 'required|string|in:new,used',
                 ];
                 break;
-            
+
             case 'purchase':
                 $specificRules = [
                     'purchase_price' => 'required|numeric|min:0',
-                    'starts_at'      => 'nullable|date', 
+                    'starts_at' => 'nullable|date',
                     'item_condition' => 'required|string|in:new,used',
                 ];
                 break;
 
             case 'donation':
                 $specificRules = [
-                    'target'    => 'required|numeric|min:1', // Ensure at least 1 currency unit
+                    'target' => 'required|numeric|min:1', // Ensure at least 1 currency unit
                     'is_capped' => 'boolean',
                 ];
                 break;
@@ -169,12 +176,18 @@ class StoreListingRequest extends BaseFormRequest
     {
         $type = $this->input('type');
         $mode = $this->input('mode') ?? 'donation';
-        
+
         // 1. Force Mapping: Business Types -> Technical Modes
-        if (in_array($type, ['private_occasion', 'donation_campaign', 'founders_creatives'])) {
+        if (
+            in_array($type, [
+                ListingType::PRIVATE_OCCASION->value,
+                ListingType::DONATION_CAMPAIGN->value,
+                ListingType::FOUNDERS_CREATIVES->value
+            ])
+        ) {
             $mode = 'donation';
         }
-        
+
         // 2. Return Data based on Mode
         return match ($mode) {
             'auction', 'purchase' => $this->safe()->only([
@@ -185,12 +198,12 @@ class StoreListingRequest extends BaseFormRequest
                 'purchase_price',
                 'item_condition',
             ]),
-            
+
             'donation' => $this->safe()->only([
                 'target',
                 'is_capped'
             ]),
-            
+
             default => [],
         };
     }

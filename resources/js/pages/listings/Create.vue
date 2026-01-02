@@ -53,12 +53,16 @@ const mediaUploadRef = ref<InstanceType<typeof ListingMediaUpload> | null>(
     null,
 );
 
-const listingType = useStorage<
-    | 'private_occasion'
-    | 'charity_action'
-    | 'donation_campaign'
-    | 'founders_creatives'
->('create-listing-type', 'private_occasion');
+const page = usePage();
+const listingTypes = computed(() => page.props.listingTypes as string[]);
+
+// Use the first type as default if available, otherwise 'private_occasion'
+const defaultType = computed(() => listingTypes.value[0] || 'private_occasion');
+
+const listingType = useStorage<string>(
+    'create-listing-type',
+    defaultType.value,
+);
 
 const getModeFromType = (type: string): 'donation' | 'auction' => {
     if (type === 'charity_action') return 'auction'; // Default to auction, can toggle to purchase
@@ -147,7 +151,6 @@ const submit = () => {
     });
 };
 const showPreview = ref(false);
-const page = usePage();
 
 // Helper to create object URLs for file previews
 const getFilePreview = (file: File) => {
@@ -363,14 +366,7 @@ const previewListing = computed(() => {
                             :form="form"
                         />
                         <ListingDonationForm
-                            v-if="
-                                [
-                                    'private_occasion',
-                                    'charity_action',
-                                    'donation_campaign',
-                                    'founders_creatives',
-                                ].includes(listingType)
-                            "
+                            v-if="listingTypes.includes(listingType)"
                             :form="form"
                         />
                     </div>
@@ -382,9 +378,7 @@ const previewListing = computed(() => {
                             <Checkbox
                                 id="terms"
                                 v-model="form.terms"
-                                @update:model-value="
-                                    (val) => console.log('Model Value:', val)
-                                "
+                                @update:model-value=""
                             />
                             <Label
                                 for="terms"

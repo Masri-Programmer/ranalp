@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ListingType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,7 +26,6 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class Listing extends Model implements HasMedia
-
 {
     use HasTranslations, HasSlug, HasFactory, SoftDeletes, InteractsWithMedia;
     public $translatable = ['title', 'description'];
@@ -110,10 +110,10 @@ class Listing extends Model implements HasMedia
      */
     public function resolveRouteBinding($value, $field = null)
     {
-      $listing = $this->where(function ($query) use ($value) {
+        $listing = $this->where(function ($query) use ($value) {
             $query->where('slug', $value)
-                  ->orWhere('uuid', $value);
-            
+                ->orWhere('uuid', $value);
+
             if (is_numeric($value)) {
                 $query->orWhere('id', $value);
             }
@@ -123,7 +123,7 @@ class Listing extends Model implements HasMedia
             return null;
         }
 
-        $isPrivate = in_array($listing->type, ['private', 'private_occasion']);
+        $isPrivate = in_array($listing->type, ['private', ListingType::PRIVATE_OCCASION->value]);
         $isOwner = Auth::check() && Auth::id() === $listing->user_id;
 
         // Redirect to UUID if private, EXCEPT if we are the owner or already using it
@@ -133,13 +133,13 @@ class Listing extends Model implements HasMedia
 
         return $listing;
     }
-   public function getRouteKey()
+    public function getRouteKey()
     {
-        return in_array($this->type, ['private', 'private_occasion']) 
-            ? $this->uuid 
+        return in_array($this->type, ['private', ListingType::PRIVATE_OCCASION->value])
+            ? $this->uuid
             : $this->slug;
     }
-    
+
     /**
      * Get all of the listing's media.
      * A listing can have many images, videos, etc.
@@ -227,27 +227,28 @@ class Listing extends Model implements HasMedia
             ->addMediaCollection('videos')
             ->acceptsMimeTypes(['video/mp4', 'video/quicktime']);
     }
- public function getPriceAttribute()
-{
-    if (!$this->listable) return null;
+    public function getPriceAttribute()
+    {
+        if (!$this->listable)
+            return null;
 
-    // Handle Auction Logic
-    if ($this->listable_type === AuctionListing::class) {
-        return $this->listable->current_bid ?? $this->listable->start_price;
+        // Handle Auction Logic
+        if ($this->listable_type === AuctionListing::class) {
+            return $this->listable->current_bid ?? $this->listable->start_price;
+        }
+
+        // Handle Donation Logic
+        if ($this->listable_type === DonationListing::class) {
+            return $this->listable->target;
+        }
+
+        // Handle Standard Items
+        if (property_exists($this->listable, 'price')) {
+            return $this->listable->price;
+        }
+
+        return null;
     }
-
-    // Handle Donation Logic
-    if ($this->listable_type === DonationListing::class) {
-        return $this->listable->target;
-    }
-
-    // Handle Standard Items
-    if (property_exists($this->listable, 'price')) {
-        return $this->listable->price;
-    }
-
-    return null;
-}
 
     public function registerMediaConversions(Media $media = null): void
     {
@@ -310,14 +311,14 @@ class Listing extends Model implements HasMedia
     }
 
     public function getOwnerAddressAttribute()
-{
-    return $this->user->address;
-}
-  public function scopePublic(Builder $query): Builder
+    {
+        return $this->user->address;
+    }
+    public function scopePublic(Builder $query): Builder
     {
         return $query->where(function ($q) {
-            $q->where('type', '!=', 'private_occasion')
-              ->orWhereNull('type');
+            $q->where('type', '!=', ListingType::PRIVATE_OCCASION->value)
+                ->orWhereNull('type');
         });
     }
 
@@ -363,33 +364,33 @@ class Listing extends Model implements HasMedia
 
         $hasPriceFilter = ($filters['min_price'] ?? null) !== null || ($filters['max_price'] ?? null) !== null;
 
-       $query->when($hasPriceFilter, function (Builder $query) use ($filters) {
-    $min = $filters['min_price'] ?? 0;
-    $max = $filters['max_price'] ?? 1000000;
+        $query->when($hasPriceFilter, function (Builder $query) use ($filters) {
+            $min = $filters['min_price'] ?? 0;
+            $max = $filters['max_price'] ?? 1000000;
 
-    $query->where(function ($q) use ($min, $max) {
-        // 1. Search in Auctions
-        $q->whereHasMorph('listable', [AuctionListing::class], function ($sq) use ($min, $max) {
-            $sq->where(function ($sub) use ($min, $max) {
-                // Only check columns that actually exist on 'auction_listings'
-                $sub->whereBetween('start_price', [$min, $max])
-                    ->orWhereBetween('current_bid', [$min, $max])
-                    ->orWhereBetween('purchase_price', [$min, $max]);
+            $query->where(function ($q) use ($min, $max) {
+                // 1. Search in Auctions
+                $q->whereHasMorph('listable', [AuctionListing::class], function ($sq) use ($min, $max) {
+                    $sq->where(function ($sub) use ($min, $max) {
+                        // Only check columns that actually exist on 'auction_listings'
+                        $sub->whereBetween('start_price', [$min, $max])
+                            ->orWhereBetween('current_bid', [$min, $max])
+                            ->orWhereBetween('purchase_price', [$min, $max]);
+                    });
+                });
+
+                // 2. OR Search in Donations
+                $q->orWhereHasMorph('listable', [DonationListing::class], function ($sq) use ($min, $max) {
+                    // Only check columns that exist on 'donation_listings'
+                    $sq->whereBetween('target', [$min, $max]);
+                });
+
+                // 3. OR Search in Fixed Price Items (if you have them)
+                // $q->orWhereHasMorph('listable', [PurchaseListing::class], function ($sq) use ($min, $max) {
+                //    $sq->whereBetween('price', [$min, $max]);
+                // });
             });
         });
-
-        // 2. OR Search in Donations
-        $q->orWhereHasMorph('listable', [DonationListing::class], function ($sq) use ($min, $max) {
-            // Only check columns that exist on 'donation_listings'
-            $sq->whereBetween('target', [$min, $max]);
-        });
-        
-        // 3. OR Search in Fixed Price Items (if you have them)
-        // $q->orWhereHasMorph('listable', [PurchaseListing::class], function ($sq) use ($min, $max) {
-        //    $sq->whereBetween('price', [$min, $max]);
-        // });
-    });
-});
 
         // 5. Location
         $query->when($filters['city'] ?? null, function ($query, $city) {
