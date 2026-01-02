@@ -24,7 +24,7 @@ echo "🛠️ Building assets for production (SSR)..."
 NODE_OPTIONS=--max-old-space-size=4096 npm run build
 
 echo "🏃 Running database migrations..."
-# php artisan migrate:fresh --seed --force
+# php artisan migrate --force
 
 echo "🧹 Clearing old Laravel caches..."
 php artisan optimize:clear
