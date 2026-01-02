@@ -95,7 +95,9 @@ class Listing extends Model implements HasMedia
     public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
-            ->generateSlugsFrom(fn($model) => $model->getTranslation('title', 'en') ?: 'listing')
+            ->generateSlugsFrom(function ($model) {
+                return app(\App\Services\LanguageService::class)->resolveTranslation($model->getTranslations('title'), null, 'listing');
+            })
             ->saveSlugsTo('slug')
             ->doNotGenerateSlugsOnUpdate();
     }

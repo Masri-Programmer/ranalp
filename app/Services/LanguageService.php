@@ -94,4 +94,26 @@ class LanguageService
 
         return null;
     }
+
+    /**
+     * Resolve the best translation from a translatable field.
+     *
+     * @param array|null $translations
+     * @param string|null $locale
+     * @param string $fallback
+     * @return string
+     */
+    public function resolveTranslation(?array $translations, ?string $locale = null, string $fallback = ''): string
+    {
+        if (empty($translations)) {
+            return $fallback;
+        }
+
+        $locale = $locale ?? app()->getLocale();
+
+        return $translations[$locale]
+            ?? $translations['en']
+            ?? collect($translations)->first()
+            ?? $fallback;
+    }
 }

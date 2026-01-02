@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use App\Http\Requests\BaseFormRequest;
 use App\Enums\ListingType;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
 
 class StoreListingRequest extends BaseFormRequest
 {
